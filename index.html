@@ -15,7 +15,8 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            /* Aquí se vincula tu archivo imagen.jpg */
+            background-color: #010103;
+            /* SE CORRIGIÓ EL FONDO: Ahora usa tu imagen real incrustada */
             background-image: url('imagen.jpg'); 
             background-size: cover;
             background-position: center;
@@ -30,17 +31,17 @@
             width: 100%;
             height: 100%;
             z-index: 1;
-            pointer-events: none; /* No interrumpe los clics */
+            pointer-events: none;
         }
 
-        /* Contenedor transparente (estilo Glassmorphism de la captura) */
+        /* Contenedor transparente (estilo Glassmorphism de tu captura) */
         .calculator {
             background-color: rgba(255, 255, 255, 0.08);
             backdrop-filter: blur(12px);
             -webkit-backdrop-filter: blur(12px);
             padding: 25px;
             border-radius: 20px;
-            border: 2px solid rgba(135, 206, 250, 0.5); /* Borde azul claro brillante */
+            border: 2px solid rgba(135, 206, 250, 0.5); 
             box-shadow: 0 0 30px rgba(135, 206, 250, 0.3);
             width: 100%;
             max-width: 380px;
@@ -48,7 +49,6 @@
             z-index: 10;
         }
 
-        /* Estructura de Pantallas y Etiquetas idéntica a tu diseño */
         .screens-container {
             display: flex;
             flex-direction: column;
@@ -86,7 +86,6 @@
         .title-a { color: #2980b9; }
         .title-b { color: #d35400; }
 
-        /* Cajas de texto integradas en el diseño */
         .display-box {
             background-color: rgba(255, 255, 255, 0.15);
             border: 1px solid rgba(255, 255, 255, 0.3);
@@ -121,7 +120,6 @@
             gap: 8px;
         }
 
-        /* Distribución exacta de botones de la captura */
         .grid {
             display: grid;
             grid-template-columns: repeat(4, 1fr);
@@ -142,7 +140,6 @@
         button:active { transform: scale(0.95); }
         button:hover { filter: brightness(1.25); }
 
-        /* Paleta de colores exacta de los botones de tu imagen */
         .btn-red { background-color: #c0392b; }
         .btn-blue { background-color: #2980b9; }
         .btn-orange { background-color: #d35400; }
@@ -213,7 +210,6 @@
 </div>
 
 <script>
-    // --- LÓGICA DE LA CALCULADORA ---
     let currentTarget = 'a';
     let currentOperation = '';
     const screenA = document.getElementById('screen-a');
@@ -276,7 +272,7 @@
             let op = currentOperation;
             let res = 0;
 
-            if (isNaN(valA) || window.isNaN(valB) || !op) return;
+            if (isNaN(valA) || isNaN(valB) || !op) return;
 
             if (op === '+') res = valA + valB;
             if (op === '-') res = valA - valB;
@@ -292,7 +288,7 @@
         }
     }
 
-    // --- ANIMACIÓN DE METEORITOS SUTILES ---
+    // Animación de meteoritos
     const canvas = document.getElementById('space-bg');
     const ctx = canvas.getContext('2d');
 
@@ -319,7 +315,7 @@
         draw() {
             ctx.beginPath();
             let g = ctx.createLinearGradient(this.x, this.y, this.x + this.length * 0.7, this.y - this.length);
-            g.addColorStop(0, 'rgba(135, 206, 250, 0.4)'); /* Estelas de color aura azul */
+            g.addColorStop(0, 'rgba(135, 206, 250, 0.4)'); 
             g.addColorStop(1, 'rgba(0,0,0,0)');
             ctx.strokeStyle = g;
             ctx.lineWidth = 1.5;
