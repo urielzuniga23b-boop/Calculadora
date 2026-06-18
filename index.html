@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora Órbita Goku UI</title>
+    <title>Calculadora Órbita Básica con Resultado e Imagen</title>
     <style>
         body, html {
             margin: 0;
@@ -15,89 +15,122 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            /* Fondo base oscuro profundo */
-            background-color: #010103;
+            background-color: #010103; /* Fondo base muy oscuro */
+            position: relative; /* Necesario para posicionar el fondo */
         }
 
-        /* Contenedor para el fondo GIF animado */
-        #ui-background {
+        /* --- NUEVO ESTILO: FONDO ANIMADO --- */
+        #goku-bg {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: -1; /* Asegura que esté detrás de todo */
-            /* Enlace al GIF proporcionado */
-            background-image: url('https://cdn.discordapp.com/attachments/1117189679691923588/1199343354921934908/Goku_Ultra_Instinct_Back.gif');
+            background-image: url('data:image/gif;base64,${base64Gif}'); /* Reemplazar con URL o Base64 real */
             background-size: cover;
             background-position: center;
-            background-repeat: no-repeat;
+            filter: brightness(0.7) blur(2px); /* Oscurecemos y difuminamos un poco para legibilidad */
+            z-index: -2; /* Detrás de los meteoritos */
+        }
+        /* ---------------------------------- */
+
+        /* Canvas para el fondo de meteoritos animado */
+        #space-bg {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1; /* Asegura que esté detrás de la calculadora pero sobre el fondo */
             display: block;
         }
 
         .calculator {
-            /* Transparencia para ver el fondo */
-            background-color: rgba(15, 15, 25, 0.75);
-            backdrop-filter: blur(10px); /* Efecto cristal */
-            padding: 25px;
+            background-color: rgba(20, 20, 30, 0.8); /* Reducimos la opacidad para que se vea el fondo */
+            backdrop-filter: blur(15px);
+            padding: 30px;
             border-radius: 25px;
-            box-shadow: 0 25px 60px rgba(52, 152, 219, 0.3); /* Brillo azulado */
-            border: 2px solid rgba(52, 152, 219, 0.4);
+            box-shadow: 0 25px 60px rgba(100, 100, 255, 0.2); /* Sombra más azulada para hacer juego */
+            border: 1px solid rgba(100, 100, 255, 0.3);
             width: 100%;
             max-width: 440px;
             position: relative;
             z-index: 10;
         }
 
-        /* Contenedor principal de pantallas individuales */
+        /* Contenedor principal de pantallas */
         .screens-container {
+            display: flex;
+            flex-direction: column; /* Apila las pantallas */
+            gap: 15px;
+            margin-bottom: 25px;
+        }
+
+        /* NUEVO: Cuadro exclusivo para el resultado (arriba) */
+        .result-screen {
+            width: 100%;
+            height: 50px;
+            background-color: rgba(10, 10, 15, 0.9);
+            border: 2px solid #2ecc71; /* Borde verde para el resultado */
+            border-radius: 10px;
+            color: #2ecc71; /* Texto verde */
+            font-size: 28px;
+            font-weight: bold;
+            text-align: right;
+            padding: 10px;
+            box-sizing: border-box;
+            outline: none;
+            cursor: default;
+        }
+
+        /* Contenedor de operación: Número A | Operador | Número B */
+        .op-container {
             display: flex;
             justify-content: space-between;
             align-items: center;
             gap: 10px;
-            margin-bottom: 25px;
         }
 
-        /* Estilo de cada pantalla independiente */
+        /* Estilo de cada pantalla de entrada */
         .display-box {
-            /* Transparencia para ver el fondo */
-            background-color: rgba(30, 30, 40, 0.7);
-            border: 2px solid rgba(255, 255, 255, 0.2);
+            width: 40%;
+            height: 55px;
+            background-color: rgba(30, 30, 45, 0.8);
+            border: 2px solid #444;
             border-radius: 10px;
             color: #ffffff;
+            font-size: 24px;
             text-align: right;
-            padding: 12px;
+            padding: 10px;
             box-sizing: border-box;
             outline: none;
             cursor: pointer;
             transition: all 0.3s ease;
         }
 
-        /* Pantallas de números (Lados) */
-        .num-input {
-            width: 40%;
-            height: 50px;
-            font-size: 24px;
-        }
-
-        /* Pantalla de operador (Centro) */
-        .op-input {
-            width: 15%;
-            height: 50px;
-            font-size: 20px;
-            text-align: center;
-            color: #f1c40f; /* Color dorado para el operador */
-            font-weight: bold;
-            border-color: rgba(255, 255, 255, 0.1);
-        }
-
         /* Efecto cuando la pantalla de entrada está seleccionada */
         .display-box.active-screen {
             border-color: #3498db;
             box-shadow: 0 0 12px rgba(52, 152, 219, 0.6);
-            background-color: rgba(40, 40, 60, 0.8);
+            background-color: rgba(40, 40, 60, 1);
         }
 
+        /* Selector de operación (Centro) */
+        .op-selector {
+            width: 50px;
+            height: 50px;
+            background-color: transparent;
+            border: none;
+            color: #f1c40f;
+            font-size: 30px;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: default;
+        }
+
+        /* Reestructuración de la cuadrícula de botones para 5 columnas básicas */
         .grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
@@ -108,166 +141,237 @@
             height: 55px;
             border: none;
             border-radius: 12px;
-            font-size: 17px;
+            font-size: 18px;
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.1s ease;
+            transition: transform 0.1s, filter 0.2s;
         }
 
         button:active { transform: scale(0.92); }
-        button:hover { filter: brightness(1.25); }
+        button:hover { filter: brightness(1.3); }
         
-        /* Colores de Botones y Transparencias */
-        .btn-number { background-color: rgba(62, 62, 62, 0.8); color: white; }
-        .btn-sci { background-color: rgba(44, 62, 80, 0.8); color: #3498db; font-size: 15px; }
-        .btn-op { background-color: rgba(211, 84, 0, 0.8); color: white; }
-        .btn-clear { background-color: rgba(192, 57, 43, 0.8); color: white; }
-        .btn-equal { background-color: rgba(39, 174, 96, 0.8); color: white; grid-column: span 2; }
+        /* Colores de Botones */
+        .btn-number { background-color: rgba(68, 68, 68, 0.9); color: white; }
+        .btn-op { background-color: rgba(211, 84, 0, 0.9); color: white; }
+        .btn-clear { background-color: rgba(192, 57, 43, 0.9); color: white; }
+        .btn-equal { background-color: rgba(39, 174, 96, 0.9); color: white; grid-column: span 2; }
     </style>
 </head>
 <body>
 
-<div id="ui-background"></div>
+<div id="goku-bg"></div>
+
+<canvas id="space-bg"></canvas>
 
 <div class="calculator">
     <div class="screens-container">
-        <input type="text" id="screen-num1" class="display-box num-input active-screen" readonly onclick="setTarget('num1')">
-        <input type="text" id="screen-op" class="display-box op-input" readonly>
-        <input type="text" id="screen-num2" class="display-box num-input" readonly onclick="setTarget('num2')">
+        <input type="text" id="screen-result" class="result-screen" readonly placeholder="Resultado">
+
+        <div class="op-container">
+            <input type="text" id="screen-a" class="display-box active-screen" readonly placeholder="" onclick="setTarget('a')">
+            <div class="op-selector" id="op-view">?</div>
+            <input type="text" id="screen-b" class="display-box" readonly placeholder="" onclick="setTarget('b')">
+        </div>
     </div>
 
     <div class="grid">
-        <button class="btn-sci" onclick="setOp('sin')">sin</button>
-        <button class="btn-sci" onclick="setOp('cos')">cos</button>
-        <button class="btn-sci" onclick="setOp('tan')">tan</button>
         <button class="btn-clear" onclick="clearCalculator()">C</button>
-        <button class="btn-clear" onclick="performBackspace()">⌫</button>
+        <button class="btn-clear" onclick="backspace()">⌫</button>
+        <button class="btn-number" onclick="press('7')">7</button>
+        <button class="btn-number" onclick="press('8')">8</button>
+        <button class="btn-number" onclick="press('9')">9</button>
 
-        <button class="btn-sci" onclick="setOp('log')">log</button>
-        <button class="btn-sci" onclick="setOp('√')">√</button>
-        <button class="btn-number" onclick="addNumber('Math.PI')">π</button>
-        <button class="btn-sci" onclick="setOp('^')">^</button>
-        <button class="btn-sci" onclick="addNumber('(')">(</button>
+        <button class="btn-op" onclick="setOp('/')">÷</button>
+        <button class="btn-op" onclick="setOp('*')">×</button>
+        <button class="btn-number" onclick="press('4')">4</button>
+        <button class="btn-number" onclick="press('5')">5</button>
+        <button class="btn-number" onclick="press('6')">6</button>
 
-        <button class="btn-number" onclick="addNumber('7')">7</button>
-        <button class="btn-number" onclick="addNumber('8')">8</button>
-        <button class="btn-number" onclick="addNumber('9')">9</button>
-        <button class="btn-sci" onclick="addNumber(')')">)</button>
-        <button class="btn-op" onclick="setOp('/')">/</button>
-
-        <button class="btn-number" onclick="addNumber('4')">4</button>
-        <button class="btn-number" onclick="addNumber('5')">5</button>
-        <button class="btn-number" onclick="addNumber('6')">6</button>
-        <button class="btn-number" onclick="addNumber('.')">.</button>
-        <button class="btn-op" onclick="setOp('*')">*</button>
-
-        <button class="btn-number" onclick="addNumber('1')">1</button>
-        <button class="btn-number" onclick="addNumber('2')">2</button>
-        <button class="btn-number" onclick="addNumber('3')">3</button>
-        <button class="btn-op" onclick="setOp('-')">-</button>
-        <button class="btn-equal" onclick="calculateResult()">=</button>
-
-        <button class="btn-number" onclick="addNumber('0')" style="grid-column: span 3;">0</button>
+        <button class="btn-op" onclick="setOp('-')">−</button>
         <button class="btn-op" onclick="setOp('+')">+</button>
+        <button class="btn-number" onclick="press('1')">1</button>
+        <button class="btn-number" onclick="press('2')">2</button>
+        <button class="btn-number" onclick="press('3')">3</button>
+
+        <button class="btn-number" onclick="press('0')" style="grid-column: span 3;">0</button>
+        <button class="btn-number" onclick="press('.')">.</button>
+        <button class="btn-equal" onclick="calculate()">=</button>
     </div>
 </div>
 
 <script>
-    // --- LÓGICA DE LA CALCULADORA (Mismo script, solo ajustado para limpieza) ---
-    let currentInputTarget = 'num1'; 
-    let currentOperator = '';
-    
-    const sNum1 = document.getElementById('screen-num1');
-    const sOp = document.getElementById('screen-op');
-    const sNum2 = document.getElementById('screen-num2');
+    // --- LÓGICA DE LA CALCULADORA ORBITAL ---
+    let currentTarget = 'a'; // Puede ser 'a' o 'b'
+    let currentOperation = '';
+    const screenA = document.getElementById('screen-a');
+    const screenB = document.getElementById('screen-b');
+    const screenResult = document.getElementById('screen-result');
+    const opView = document.getElementById('op-view');
 
+    // Define en qué casilla se escribirán los números
     function setTarget(target) {
-        currentInputTarget = target;
+        currentTarget = target;
         updateFocusStyles();
     }
 
+    // Actualiza visualmente qué casilla está activa
     function updateFocusStyles() {
-        if (currentInputTarget === 'num1') {
-            sNum1.classList.add('active-screen');
-            sNum2.classList.remove('active-screen');
+        if (currentTarget === 'a') {
+            screenA.classList.add('active-screen');
+            screenB.classList.remove('active-screen');
         } else {
-            sNum2.classList.add('active-screen');
-            sNum1.classList.remove('active-screen');
+            screenB.classList.add('active-screen');
+            screenA.classList.remove('active-screen');
         }
     }
 
-    function addNumber(val) {
-        if (currentInputTarget === 'num1') {
-            sNum1.value += val;
+    // Añade números o símbolos directamente a la casilla activa (SIN BLOQUEOS)
+    function press(value) {
+        if (currentTarget === 'a') {
+            screenA.value += value;
         } else {
-            sNum2.value += val;
+            screenB.value += value;
         }
     }
 
+    // Al pulsar operación, saltamos de casilla por comodidad
     function setOp(op) {
-        currentOperator = op;
-        sOp.value = op; 
-        currentInputTarget = 'num2';
+        currentOperation = op;
+        // Mostramos un símbolo limpio en el centro
+        let opDisplay = op;
+        if (opDisplay === '/') opDisplay = '÷';
+        if (opDisplay === '*') opDisplay = '×';
+        opView.innerText = opDisplay;
+        
+        // Comodidad: saltamos al segundo número para que sigas escribiendo
+        currentTarget = 'b';
         updateFocusStyles();
     }
 
     function clearCalculator() {
-        sNum1.value = '';
-        sOp.value = '';
-        sNum2.value = '';
-        currentOperator = '';
-        currentInputTarget = 'num1';
+        screenA.value = '';
+        screenB.value = '';
+        screenResult.value = ''; // Limpiamos también el resultado
+        opView.innerText = '?';
+        currentOperation = '';
+        currentTarget = 'a';
         updateFocusStyles();
     }
 
-    function performBackspace() {
-        let activeScreen = (currentInputTarget === 'num1') ? sNum1 : sNum2;
+    function backspace() {
+        let activeScreen = (currentTarget === 'a') ? screenA : screenB;
         activeScreen.value = activeScreen.value.slice(0, -1);
     }
 
-    function calculateResult() {
+    function calculate() {
         try {
-            let n1_raw = sNum1.value || "0";
-            let n2_raw = sNum2.value || "0";
-            
-            let n1 = eval(n1_raw.replace(/π/g, 'Math.PI'));
-            let n2 = eval(n2_raw.replace(/π/g, 'Math.PI'));
-            let op = currentOperator;
+            let valA = screenA.value.trim();
+            let valB = screenB.value.trim();
+            let op = currentOperation;
             let result;
 
-            switch (op) {
-                case '+': result = n1 + n2; break;
-                case '-': result = n1 - n2; break;
-                case '*': result = n1 * n2; break;
-                case '/': result = n1 / n2; break;
-                case '^': result = Math.pow(n1, n2); break;
-                case '√': result = Math.sqrt(n1); break;
-                case 'sin': result = Math.sin(n1 * Math.PI / 180); break; 
-                case 'cos': result = Math.cos(n1 * Math.PI / 180); break;
-                case 'tan': result = Math.tan(n1 * Math.PI / 180); break;
-                case 'log': result = Math.log10(n1); break;
-                default: result = n1;
+            if (!valA || !valB || !op) {
+                return; // No calculamos si faltan datos
             }
+
+            // Construimos la expresión matemática final
+            let expression = valA + op + valB;
+
+            // Evaluamos la expresión
+            result = eval(expression);
 
             if (isNaN(result) || !isFinite(result)) {
-                sNum1.value = "Error";
+                screenResult.value = "Error"; // El error aparece en el cuadro de resultado
             } else {
-                let formattedRes = Number(result.toFixed(8)).toString();
-                sNum1.value = formattedRes;
+                // Mostramos el resultado formateado en la NUEVA casilla de resultado
+                let formattedRes = Number(result.toFixed(6)).toString();
+                screenResult.value = formattedRes;
             }
             
-            sOp.value = '';
-            sNum2.value = '';
-            currentOperator = '';
-            currentInputTarget = 'num1';
-            updateFocusStyles();
+            // Mantenemos los campos de entrada y la operación intactos para que el usuario pueda ver lo que calculó.
+            // Si el usuario quiere calcular sobre el resultado, debe usar 'C' y reescribir.
 
         } catch (error) {
-            sNum1.value = "Error";
-            sOp.value = '';
-            sNum2.value = '';
+            screenResult.value = "Error";
         }
     }
+
+    // --- MOTOR DE ANIMACIÓN ESPACIAL (CANVAS) ARREGLADO ---
+    const canvas = document.getElementById('space-bg');
+    const ctx = canvas.getContext('2d');
+
+    function resizeCanvas() {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+    }
+    window.addEventListener('resize', resizeCanvas);
+    resizeCanvas(); // Ejecutar al inicio
+
+    // Estructura de un meteorito
+    class Meteor {
+        constructor() {
+            this.reset();
+        }
+
+        reset() {
+            this.x = Math.random() * canvas.width * 1.5; // Aparecen a la derecha
+            this.y = Math.random() * -300 - 50;          // Aparecen arriba fuera de pantalla
+            this.length = Math.random() * 80 + 50;     // Largo de la estela
+            this.speed = Math.random() * 6 + 4;         // Velocidad de caída
+            this.thickness = Math.random() * 2 + 1;     // Grosor
+            this.alpha = Math.random() * 0.5 + 0.5;     // Transparencia
+        }
+
+        update() {
+            // Se mueven diagonalmente (izquierda-abajo)
+            this.x -= this.speed * 0.7;
+            this.y += this.speed;
+
+            // Si sale de la pantalla, se reinicia
+            if (this.y > canvas.height + 100 || this.x < -150) {
+                this.reset();
+            }
+        }
+
+        draw() {
+            ctx.beginPath();
+            // Degradado de la estela (fuego -> transparente)
+            let gradient = ctx.createLinearGradient(this.x, this.y, this.x + this.length * 0.7, this.y - this.length);
+            gradient.addColorStop(0, `rgba(100, 100, 255, ${this.alpha})`);   // Cambiamos a azul para juego con Goku
+            gradient.addColorStop(0.2, `rgba(50, 50, 200, ${this.alpha * 0.5})`);
+            gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');                    // Desvanecido total
+
+            ctx.strokeStyle = gradient;
+            ctx.lineWidth = this.thickness;
+            ctx.moveTo(this.x, this.y);
+            ctx.lineTo(this.x + this.length * 0.7, this.y - this.length);
+            ctx.stroke();
+        }
+    }
+
+    // Crear una lista de meteoritos
+    const meteors = [];
+    const maxMeteors = 20; // Cantidad de meteoritos simultáneos
+    for (let i = 0; i < maxMeteors; i++) {
+        meteors.push(new Meteor());
+    }
+
+    // Bucle de animación principal
+    function animate() {
+        // Fondo negro semi-transparente para el efecto 'trail' (estela difuminada)
+        ctx.fillStyle = 'rgba(1, 1, 3, 0.15)'; // Reducimos opacidad para ver el fondo
+        ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Actualizar y dibujar meteoritos
+        meteors.forEach(meteor => {
+            meteor.update();
+            meteor.draw();
+        });
+
+        requestAnimationFrame(animate); // Llamar al siguiente frame
+    }
+
+    animate(); // Iniciar animación
 </script>
 
 </body>
