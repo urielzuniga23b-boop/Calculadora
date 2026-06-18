@@ -7,7 +7,6 @@
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            /* Fondo de color rojo (un tono carmesí/oscuro elegante para que no canse la vista) */
             background: linear-gradient(135deg, #8b0000, #e60000);
             display: flex;
             justify-content: center;
@@ -22,19 +21,19 @@
             border-radius: 20px;
             box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
             width: 100%;
-            max-width: 400px;
+            max-width: 420px;
         }
 
         .display {
             width: 100%;
-            height: 60px;
+            height: 70px;
             background-color: #2d2d2d;
             border: none;
             border-radius: 10px;
             color: #ffffff;
-            font-size: 24px;
+            font-size: 26px;
             text-align: right;
-            padding: 10px;
+            padding: 15px;
             box-sizing: border-box;
             margin-bottom: 20px;
         }
@@ -46,7 +45,7 @@
         }
 
         button {
-            height: 50px;
+            height: 52px;
             border: none;
             border-radius: 8px;
             font-size: 16px;
@@ -62,8 +61,6 @@
         button:hover {
             filter: brightness(1.2);
         }
-
-        /* DISEÑO DE DIFERENTES CUADROS POR CATEGORÍA */
         
         /* Botones de Números (Gris claro) */
         .btn-number {
@@ -71,11 +68,18 @@
             color: white;
         }
 
-        /* Botones Científicos (Azul oscuro / Gris azulado) */
+        /* Botones Científicos (Gris azulado) */
         .btn-sci {
             background-color: #2c3e50;
             color: #3498db;
             font-size: 14px;
+        }
+
+        /* Botones Especiales (Fracciones / Paréntesis avanzados) */
+        .btn-spec {
+            background-color: #34495e;
+            color: #2ecc71;
+            font-size: 15px;
         }
 
         /* Botones de Operaciones Básicas (Naranja) */
@@ -94,7 +98,7 @@
         .btn-equal {
             background-color: #27ae60;
             color: white;
-            grid-column: span 2; /* Ocupa el espacio de dos cuadros */
+            grid-column: span 2;
         }
     </style>
 </head>
@@ -104,77 +108,99 @@
     <input type="text" id="screen" class="display" readonly placeholder="0">
 
     <div class="grid">
-        <button class="btn-sci" onclick="press('Math.sin(')">sin</button>
-        <button class="btn-sci" onclick="press('Math.cos(')">cos</button>
-        <button class="btn-sci" onclick="press('Math.tan(')">tan</button>
+        <button class="btn-sci" onclick="press('sin(', 'Math.sin(')">sin</button>
+        <button class="btn-sci" onclick="press('cos(', 'Math.cos(')">cos</button>
+        <button class="btn-sci" onclick="press('tan(', 'Math.tan(')">tan</button>
         <button class="btn-clear" onclick="clearScreen()">C</button>
         <button class="btn-clear" onclick="backspace()">⌫</button>
 
-        <button class="btn-sci" onclick="press('Math.log10(')">log</button>
-        <button class="btn-sci" onclick="press('Math.sqrt(')">√</button>
-        <button class="btn-sci" onclick="press('Math.PI')">π</button>
-        <button class="btn-sci" onclick="press('**')">^</button>
-        <button class="btn-op" onclick="press('/')">/</button>
+        <button class="btn-sci" onclick="press('log(', 'Math.log10(')">log</button>
+        <button class="btn-sci" onclick="press('√(', 'Math.sqrt(')">√</button>
+        <button class="btn-sci" onclick="press('π', 'Math.PI')">π</button>
+        <button class="btn-sci" onclick="press('^', '**')">^</button>
+        <button class="btn-spec" onclick="press('/', '/')">a/b</button>
 
-        <button class="btn-number" onclick="press('7')">7</button>
-        <button class="btn-number" onclick="press('8')">8</button>
-        <button class="btn-number" onclick="press('9')">9</button>
-        <button class="btn-sci" onclick="press('(')">(</button>
-        <button class="btn-op" onclick="press('*')">*</button>
+        <button class="btn-number" onclick="press('7', '7')">7</button>
+        <button class="btn-number" onclick="press('8', '8')">8</button>
+        <button class="btn-number" onclick="press('9', '9')">9</button>
+        <button class="btn-sci" onclick="press('(', '(')">(</button>
+        <button class="btn-op" onclick="press('/', '/')">÷</button>
 
-        <button class="btn-number" onclick="press('4')">4</button>
-        <button class="btn-number" onclick="press('5')">5</button>
-        <button class="btn-number" onclick="press('6')">6</button>
-        <button class="btn-sci" onclick="press(')')">)</button>
-        <button class="btn-op" onclick="press('-')">-</button>
+        <button class="btn-number" onclick="press('4', '4')">4</button>
+        <button class="btn-number" onclick="press('5', '5')">5</button>
+        <button class="btn-number" onclick="press('6', '6')">6</button>
+        <button class="btn-sci" onclick="press(')', ')')">)</button>
+        <button class="btn-op" onclick="press('*', '*')">×</button>
 
-        <button class="btn-number" onclick="press('1')">1</button>
-        <button class="btn-number" onclick="press('2')">2</button>
-        <button class="btn-number" onclick="press('3')">3</button>
-        <button class="btn-op" onclick="press('+')">+</button>
+        <button class="btn-number" onclick="press('1', '1')">1</button>
+        <button class="btn-number" onclick="press('2', '2')">2</button>
+        <button class="btn-number" onclick="press('3', '3')">3</button>
+        <button class="btn-op" onclick="press('-', '-')">-</button>
         <button class="btn-equal" onclick="calculate()">=</button>
 
-        <button class="btn-number" onclick="press('0')" style="grid-column: span 2;">0</button>
-        <button class="btn-number" onclick="press('.')">.</button>
+        <button class="btn-number" onclick="press('0', '0')" style="grid-column: span 2;">0</button>
+        <button class="btn-number" onclick="press('.', '.')">.</button>
+        <button class="btn-op" onclick="press('+', '+')" style="grid-column: span 2;">+</button>
     </div>
 </div>
 
 <script>
     const screen = document.getElementById('screen');
+    let realExpression = ""; 
+    let logHistory = []; 
 
-    // Función para escribir en la pantalla al pulsar un botón
-    function press(value) {
-        screen.value += value;
+    function press(viewValue, mathValue) {
+        screen.value += viewValue;
+        realExpression += mathValue;
+        
+        logHistory.push({
+            viewLength: viewValue.length,
+            mathLength: mathValue.length
+        });
     }
 
-    // Función para borrar todo
     function clearScreen() {
         screen.value = '';
+        realExpression = '';
+        logHistory = [];
     }
 
-    // Función para borrar el último carácter escrito
     function backspace() {
-        screen.value = screen.value.slice(0, -1);
+        if (logHistory.length > 0) {
+            let lastInput = logHistory.pop();
+            screen.value = screen.value.slice(0, -lastInput.viewLength);
+            realExpression = realExpression.slice(0, -lastInput.mathLength);
+        }
     }
 
-    // Función para realizar las operaciones matemáticas
     function calculate() {
         try {
-            // Evaluamos la expresión matemática escrita en la pantalla
-            // Reemplazamos visualmente lo necesario si hace falta, eval hace el cálculo básico
-            let expression = screen.value;
+            let expr = realExpression;
             
-            // Si hay paréntesis abiertos sin cerrar al final de funciones de JavaScript, intentamos resolverlos
-            let result = eval(expression);
+            // Auto-cerrar paréntesis por seguridad
+            let openParentheses = (expr.match(/\(/g) || []).length;
+            let closeParentheses = (expr.match(/\)/g) || []).length;
+            while (openParentheses > closeParentheses) {
+                expr += ')';
+                closeParentheses++;
+            }
+
+            let result = eval(expr);
             
-            if (result === undefined || isNaN(result)) {
+            if (result === undefined || isNaN(result) || !isFinite(result)) {
                 screen.value = "Error";
+                realExpression = "";
+                logHistory = [];
             } else {
-                // Limitamos los decimales largos para que no se salgan de la pantalla
-                screen.value = Number(result.toFixed(6)); 
+                let formattedResult = Number(result.toFixed(6)).toString();
+                screen.value = formattedResult;
+                realExpression = formattedResult;
+                logHistory = [{ viewLength: formattedResult.length, mathLength: formattedResult.length }];
             }
         } catch (error) {
             screen.value = "Error";
+            realExpression = "";
+            logHistory = [];
         }
     }
 </script>
