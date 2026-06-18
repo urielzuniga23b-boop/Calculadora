@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora Científica Orbital</title>
+    <title>Calculadora Científica Orbital Pro</title>
     <style>
         body, html {
             margin: 0;
@@ -15,8 +15,7 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            /* Fondo base oscuro profundo */
-            background-color: #010103;
+            background-color: #010103; /* Fondo base oscuro profundo */
         }
 
         /* Canvas para el fondo de meteoritos animado */
@@ -26,7 +25,7 @@
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: -1; /* Asegura que esté detrás de todo */
+            z-index: -1;
             display: block;
         }
 
@@ -62,7 +61,6 @@
             padding: 12px;
             box-sizing: border-box;
             outline: none;
-            cursor: pointer;
             transition: all 0.3s ease;
         }
 
@@ -84,11 +82,17 @@
             border-color: #555;
         }
 
-        /* Efecto cuando la pantalla de ARRIBA está seleccionada */
-        .display-box.active-screen {
+        /* Halo de foco (Azul para Num1, Verde para Num2) */
+        .num-input.active-num1 {
             border-color: #3498db;
             box-shadow: 0 0 12px rgba(52, 152, 219, 0.6);
             background-color: rgba(40, 40, 60, 0.9);
+        }
+
+        .num-input.active-num2 {
+            border-color: #2ecc71;
+            box-shadow: 0 0 12px rgba(46, 204, 113, 0.6);
+            background-color: rgba(40, 60, 40, 0.9);
         }
 
         .grid {
@@ -124,9 +128,9 @@
 
 <div class="calculator">
     <div class="screens-container">
-        <input type="text" id="screen-num1" class="display-box num-input active-screen" readonly onclick="setTarget('num1')">
+        <input type="text" id="screen-num1" class="display-box num-input active-num1" readonly>
         <input type="text" id="screen-op" class="display-box op-input" readonly>
-        <input type="text" id="screen-num2" class="display-box num-input" readonly onclick="setTarget('num2')">
+        <input type="text" id="screen-num2" class="display-box num-input" readonly>
     </div>
 
     <div class="grid">
@@ -166,104 +170,96 @@
 </div>
 
 <script>
-    // --- SISTEMA DE ENTRADA Y FLUJO DE CALCULADORA ---
-    let currentInputTarget = 'num1'; // Puede ser 'num1' o 'num2'
-    let currentOperator = '';
+    // --- SISTEMA DE ENTRADA CORREGIDO Y FLUJO INSTANTÁNEO ---
+    let activeInputTarget = 'num1'; // El primer número empieza activo
+    let storedOperator = '';
     
     const sNum1 = document.getElementById('screen-num1');
     const sOp = document.getElementById('screen-op');
     const sNum2 = document.getElementById('screen-num2');
 
-    // Define en qué casilla se escribirán los números
-    function setTarget(target) {
-        currentInputTarget = target;
-        updateFocusStyles();
-    }
-
-    // Actualiza visualmente qué casilla está activa
-    function updateFocusStyles() {
-        if (currentInputTarget === 'num1') {
-            sNum1.classList.add('active-screen');
-            sNum2.classList.remove('active-screen');
+    // Cambia el foco y el halo de color (Azul -> Num1, Verde -> Num2)
+    function setTarget(newTarget) {
+        activeInputTarget = newTarget;
+        if (newTarget === 'num1') {
+            sNum1.classList.add('active-num1');
+            sNum2.classList.remove('active-num2');
         } else {
-            sNum2.classList.add('active-screen');
-            sNum1.classList.remove('active-screen');
+            sNum2.classList.add('active-num2');
+            sNum1.classList.remove('active-num1');
         }
     }
 
-    // Añade un número a la casilla activa
-    function addNumber(val) {
-        if (currentInputTarget === 'num1') {
-            sNum1.value += val;
+    // Añade un número a la casilla que esté activa en ese momento
+    function addNumber(digit) {
+        if (activeInputTarget === 'num1') {
+            sNum1.value += digit;
         } else {
-            sNum2.value += val;
+            sNum2.value += digit;
         }
     }
 
-    // Establece la operación sin escribirla en las casillas de números
-    function setOp(op) {
-        currentOperator = op;
-        sOp.value = op; // Mostramos el operador en el centro
+    // NUEVA LÓGICA INSTANTÁNEA: Al presionar Operación, se establece el operador Y se salta a Num2
+    function setOp(opSymbol) {
+        storedOperator = opSymbol;
+        sOp.value = opSymbol; // Mostramos el operador dorado en el centro
         
-        // Al elegir operador, saltamos automáticamente al segundo número
-        currentInputTarget = 'num2';
-        updateFocusStyles();
+        // --- SALTO INSTANTÁNEO Y DESBLOQUEO DEL SEGUNDO CAMPO ---
+        setTarget('num2');
     }
 
     function clearCalculator() {
         sNum1.value = '';
         sOp.value = '';
         sNum2.value = '';
-        currentOperator = '';
-        currentInputTarget = 'num1';
-        updateFocusStyles();
+        storedOperator = '';
+        setTarget('num1'); // Volvemos al inicio con halo azul
     }
 
     function performBackspace() {
-        let activeScreen = (currentInputTarget === 'num1') ? sNum1 : sNum2;
-        activeScreen.value = activeScreen.value.slice(0, -1);
+        let currentScreen = (activeInputTarget === 'num1') ? sNum1 : sNum2;
+        currentScreen.value = currentScreen.value.slice(0, -1);
     }
 
     function calculateResult() {
         try {
-            let n1_raw = sNum1.value || "0";
-            let n2_raw = sNum2.value || "0";
+            let expr1_raw = sNum1.value || "0";
+            let expr2_raw = sNum2.value || "0";
             
-            // Evaluamos las expresiones de los números por si hay paréntesis o PI
-            let n1 = eval(n1_raw.replace(/π/g, 'Math.PI'));
-            let n2 = eval(n2_raw.replace(/π/g, 'Math.PI'));
-            let op = currentOperator;
-            let result;
+            // Evaluamos las expresiones de ambos campos por si hay paréntesis o PI
+            let n1 = eval(expr1_raw.replace(/π/g, 'Math.PI'));
+            let n2 = eval(expr2_raw.replace(/π/g, 'Math.PI'));
+            let op = storedOperator;
+            let finalRes;
 
-            // Ejecutamos la operación elegida
+            // Ejecutamos la operación lógica seleccionada
             switch (op) {
-                case '+': result = n1 + n2; break;
-                case '-': result = n1 - n2; break;
-                case '*': result = n1 * n2; break;
-                case '/': result = n1 / n2; break;
-                case '^': result = Math.pow(n1, n2); break;
-                case '√': result = Math.sqrt(n1); break;
-                case 'sin': result = Math.sin(n1 * Math.PI / 180); break; // Asumimos Grados
-                case 'cos': result = Math.cos(n1 * Math.PI / 180); break;
-                case 'tan': result = Math.tan(n1 * Math.PI / 180); break;
-                case 'log': result = Math.log10(n1); break;
-                default: result = n1; // Si no hay operador, muestra n1
+                case '+': finalRes = n1 + n2; break;
+                case '-': finalRes = n1 - n2; break;
+                case '*': finalRes = n1 * n2; break;
+                case '/': finalRes = n1 / n2; break;
+                case '^': finalRes = Math.pow(n1, n2); break;
+                case '√': finalRes = Math.sqrt(n1); break;
+                case 'sin': finalRes = Math.sin(n1 * Math.PI / 180); break; // Asumimos Grados
+                case 'cos': finalRes = Math.cos(n1 * Math.PI / 180); break;
+                case 'tan': finalRes = Math.tan(n1 * Math.PI / 180); break;
+                case 'log': finalRes = Math.log10(n1); break;
+                default: finalRes = n1; // Si no hay operador, muestra n1
             }
 
-            if (isNaN(result) || !isFinite(result)) {
+            if (isNaN(finalRes) || !isFinite(finalRes)) {
                 sNum1.value = "Error";
             } else {
                 // Mostramos el resultado simplificado en el primer campo
-                let formattedRes = Number(result.toFixed(8)).toString();
-                sNum1.value = formattedRes;
+                let formattedValue = Number(finalRes.toFixed(8)).toString();
+                sNum1.value = formattedValue;
             }
             
             // Limpiamos operador y segundo número para la siguiente operación
             sOp.value = '';
             sNum2.value = '';
-            currentOperator = '';
-            currentInputTarget = 'num1';
-            updateFocusStyles();
+            storedOperator = '';
+            setTarget('num1'); // Volvemos al foco azul en n1 con el resultado
 
         } catch (error) {
             sNum1.value = "Error";
@@ -274,7 +270,7 @@
 
     // --- MOTOR DE ANIMACIÓN ESPACIAL ARREGLADO (CANVAS) ---
     const canvas = document.getElementById('space-bg');
-    const ctx = canvas.getContext('2d'); // Aseguramos que cargue el contexto
+    const context = canvas.getContext('2d'); // Aseguramos contexto correcto
 
     function resizeCanvas() {
         canvas.width = window.innerWidth;
@@ -283,23 +279,23 @@
     window.addEventListener('resize', resizeCanvas);
     resizeCanvas(); // Ejecutar inicio
 
-    // 1. ESTRELLAS ESTÁTICAS DE FONDO
+    // 1. ESTRELLAS ESTÁTICAS DE FONDO (Le dan profundidad)
     class Star {
         constructor() { this.reset(); }
         reset() {
             this.x = Math.random() * canvas.width;
             this.y = Math.random() * canvas.height;
             this.size = Math.random() * 1.5;
-            this.blinkSpeed = Math.random() * 0.02 + 0.005;
-            this.alpha = Math.random();
+            this.blinkRate = Math.random() * 0.02 + 0.005;
+            this.opacity = Math.random();
         }
         draw() {
-            this.alpha += this.blinkSpeed;
-            if (this.alpha > 1 || this.alpha < 0) this.blinkSpeed *= -1;
-            ctx.fillStyle = `rgba(255, 255, 255, ${Math.abs(this.alpha)})`;
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-            ctx.fill();
+            this.opacity += this.blinkRate;
+            if (this.opacity > 1 || this.opacity < 0) this.blinkRate *= -1;
+            context.fillStyle = `rgba(255, 255, 255, ${Math.abs(this.opacity)})`;
+            context.beginPath();
+            context.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            context.fill();
         }
     }
 
@@ -319,4 +315,44 @@
             this.x -= this.speed * 0.8;
             this.y += this.speed;
             // Reiniciar si salen de la pantalla
-            if (this.y > canvas.height + 100 || this.x < -150) {
+            if (this.y > canvas.height + 100 || this.x < -150) { this.reset(); }
+        }
+        draw() {
+            context.beginPath();
+            let trailGradient = context.createLinearGradient(this.x, this.y, this.x + this.length * 0.7, this.y - this.length);
+            trailGradient.addColorStop(0, `rgba(255, 100, 50, ${this.alpha})`); // Cabeza roja/naranja
+            trailGradient.addColorStop(0.3, `rgba(200, 0, 0, ${this.alpha * 0.5})`);
+            trailGradient.addColorStop(1, 'rgba(0, 0, 0, 0)'); // Cola invisible
+            context.strokeStyle = trailGradient;
+            context.lineWidth = this.thickness;
+            context.moveTo(this.x, this.y);
+            context.lineTo(this.x + this.length * 0.7, this.y - this.length);
+            context.stroke();
+        }
+    }
+
+    // Generar Objetos espaciales
+    const starField = Array.from({ length: 150 }, () => new Star());
+    const meteorShower = Array.from({ length: 25 }, () => new Meteor());
+
+    // Bucle de Animación Principal (Core)
+    function renderSpace() {
+        // Fondo negro con leve opacidad para crear el rastro sutil (trail)
+        context.fillStyle = 'rgba(1, 1, 3, 0.3)';
+        context.fillRect(0, 0, canvas.width, canvas.height);
+
+        // Dibujar todo detrás de la calculadora
+        starField.forEach(star => star.draw());
+        meteorShower.forEach(meteor => {
+            meteor.update();
+            meteor.draw();
+        });
+
+        requestAnimationFrame(renderSpace);
+    }
+
+    renderSpace(); // Iniciar animación espacial
+</script>
+
+</body>
+</html>
