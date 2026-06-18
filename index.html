@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora Científica Espacial</title>
+    <title>Calculadora Científica Orbital</title>
     <style>
         body, html {
             margin: 0;
@@ -15,7 +15,8 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: #050510;
+            /* Fondo base oscuro profundo */
+            background-color: #010103;
         }
 
         /* Canvas para el fondo de meteoritos animado */
@@ -25,88 +26,96 @@
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: -1;
+            z-index: -1; /* Asegura que esté detrás de todo */
+            display: block;
         }
 
         .calculator {
-            background-color: rgba(26, 26, 26, 0.9);
-            backdrop-filter: blur(12px);
-            padding: 20px;
-            border-radius: 20px;
-            box-shadow: 0 20px 50px rgba(230, 0, 0, 0.25);
-            border: 1px solid rgba(230, 0, 0, 0.3);
+            background-color: rgba(15, 15, 25, 0.9);
+            backdrop-filter: blur(15px);
+            padding: 25px;
+            border-radius: 25px;
+            box-shadow: 0 25px 60px rgba(255, 0, 0, 0.2);
+            border: 1px solid rgba(255, 50, 50, 0.3);
             width: 100%;
-            max-width: 400px;
+            max-width: 440px;
+            position: relative;
+            z-index: 10;
         }
 
-        /* Contenedor principal de pantallas individuales */
+        /* Contenedor principal de pantallas individuales (NUEVA LÓGICA) */
         .screens-container {
             display: flex;
-            flex-direction: column;
-            gap: 12px; /* Espacio de separación entre ambas pantallas */
-            margin-bottom: 20px;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 25px;
         }
 
         /* Estilo de cada pantalla independiente */
         .display-box {
-            width: 100%;
-            height: 45px;
-            background-color: #2d2d2d;
+            background-color: rgba(30, 30, 40, 0.8);
             border: 2px solid #444;
-            border-radius: 8px;
+            border-radius: 10px;
             color: #ffffff;
-            font-size: 22px;
             text-align: right;
-            padding: 10px;
+            padding: 12px;
             box-sizing: border-box;
             outline: none;
             cursor: pointer;
             transition: all 0.3s ease;
         }
 
-        /* Efecto cuando la pantalla de ARRIBA está seleccionada */
-        .display-box.active-top {
-            border-color: #3498db;
-            box-shadow: 0 0 8px rgba(52, 152, 219, 0.5);
+        /* Pantallas de números (Lados) */
+        .num-input {
+            width: 40%;
+            height: 50px;
+            font-size: 24px;
         }
 
-        /* Efecto cuando la pantalla de ABAJO está seleccionada */
-        .display-box.active-bottom {
-            border-color: #2ecc71;
-            box-shadow: 0 0 8px rgba(46, 204, 113, 0.5);
+        /* Pantalla de operador (Centro) */
+        .op-input {
+            width: 15%;
+            height: 50px;
+            font-size: 20px;
+            text-align: center;
+            color: #f1c40f; /* Color dorado para el operador */
+            font-weight: bold;
+            border-color: #555;
+        }
+
+        /* Efecto cuando la pantalla de ARRIBA está seleccionada */
+        .display-box.active-screen {
+            border-color: #3498db;
+            box-shadow: 0 0 12px rgba(52, 152, 219, 0.6);
+            background-color: rgba(40, 40, 60, 0.9);
         }
 
         .grid {
             display: grid;
             grid-template-columns: repeat(5, 1fr);
-            gap: 10px;
+            gap: 12px;
         }
 
         button {
-            height: 50px;
+            height: 55px;
             border: none;
-            border-radius: 8px;
-            font-size: 16px;
+            border-radius: 12px;
+            font-size: 17px;
             font-weight: bold;
             cursor: pointer;
-            transition: transform 0.1s, filter 0.2s;
+            transition: all 0.1s ease;
         }
 
-        button:active { transform: scale(0.95); }
-        button:hover { filter: brightness(1.2); }
+        button:active { transform: scale(0.92); }
+        button:hover { filter: brightness(1.25); }
         
-        .btn-number { background-color: #4a4a4a; color: white; }
-        .btn-sci { background-color: #2c3e50; color: #3498db; font-size: 14px; }
+        /* Categorías de Botones */
+        .btn-number { background-color: #3e3e3e; color: white; }
+        .btn-sci { background-color: #2c3e50; color: #3498db; font-size: 15px; }
         .btn-op { background-color: #d35400; color: white; }
         .btn-clear { background-color: #c0392b; color: white; }
         .btn-equal { background-color: #27ae60; color: white; grid-column: span 2; }
-        
-        /* Botón para alternar cómodamente */
-        .btn-toggle {
-            background-color: #8e44ad;
-            color: #f1c40f;
-            font-size: 13px;
-        }
     </style>
 </head>
 <body>
@@ -115,189 +124,199 @@
 
 <div class="calculator">
     <div class="screens-container">
-        <input type="text" id="screen-top" class="display-box active-top" readonly placeholder="" onclick="switchScreen('top')">
-        <input type="text" id="screen-bottom" class="display-box" readonly placeholder="" onclick="switchScreen('bottom')">
+        <input type="text" id="screen-num1" class="display-box num-input active-screen" readonly onclick="setTarget('num1')">
+        <input type="text" id="screen-op" class="display-box op-input" readonly>
+        <input type="text" id="screen-num2" class="display-box num-input" readonly onclick="setTarget('num2')">
     </div>
 
     <div class="grid">
-        <button class="btn-sci" onclick="press('Math.sin(')">sin</button>
-        <button class="btn-sci" onclick="press('Math.cos(')">cos</button>
-        <button class="btn-sci" onclick="press('Math.tan(')">tan</button>
-        <button class="btn-clear" onclick="clearScreen()">C</button>
-        <button class="btn-clear" onclick="backspace()">⌫</button>
+        <button class="btn-sci" onclick="setOp('sin')">sin</button>
+        <button class="btn-sci" onclick="setOp('cos')">cos</button>
+        <button class="btn-sci" onclick="setOp('tan')">tan</button>
+        <button class="btn-clear" onclick="clearCalculator()">C</button>
+        <button class="btn-clear" onclick="performBackspace()">⌫</button>
 
-        <button class="btn-sci" onclick="press('Math.log10(')">log</button>
-        <button class="btn-sci" onclick="press('Math.sqrt(')">√</button>
-        <button class="btn-sci" onclick="press('Math.PI')">π</button>
-        <button class="btn-sci" onclick="press('**')">^</button>
-        <button class="btn-toggle" onclick="toggleScreen()">⬘/⬙</button>
+        <button class="btn-sci" onclick="setOp('log')">log</button>
+        <button class="btn-sci" onclick="setOp('√')">√</button>
+        <button class="btn-number" onclick="addNumber('Math.PI')">π</button>
+        <button class="btn-sci" onclick="setOp('^')">^</button>
+        <button class="btn-sci" onclick="addNumber('(')">(</button>
 
-        <button class="btn-number" onclick="press('7')">7</button>
-        <button class="btn-number" onclick="press('8')">8</button>
-        <button class="btn-number" onclick="press('9')">9</button>
-        <button class="btn-sci" onclick="press('(')">(</button>
-        <button class="btn-op" onclick="press('/')">/</button>
+        <button class="btn-number" onclick="addNumber('7')">7</button>
+        <button class="btn-number" onclick="addNumber('8')">8</button>
+        <button class="btn-number" onclick="addNumber('9')">9</button>
+        <button class="btn-sci" onclick="addNumber(')')">)</button>
+        <button class="btn-op" onclick="setOp('/')">/</button>
 
-        <button class="btn-number" onclick="press('4')">4</button>
-        <button class="btn-number" onclick="press('5')">5</button>
-        <button class="btn-number" onclick="press('6')">6</button>
-        <button class="btn-sci" onclick="press(')')">)</button>
-        <button class="btn-op" onclick="press('*')">*</button>
+        <button class="btn-number" onclick="addNumber('4')">4</button>
+        <button class="btn-number" onclick="addNumber('5')">5</button>
+        <button class="btn-number" onclick="addNumber('6')">6</button>
+        <button class="btn-number" onclick="addNumber('.')">.</button>
+        <button class="btn-op" onclick="setOp('*')">*</button>
 
-        <button class="btn-number" onclick="press('1')">1</button>
-        <button class="btn-number" onclick="press('2')">2</button>
-        <button class="btn-number" onclick="press('3')">3</button>
-        <button class="btn-op" onclick="press('-')">-</button>
-        <button class="btn-equal" onclick="calculate()">=</button>
+        <button class="btn-number" onclick="addNumber('1')">1</button>
+        <button class="btn-number" onclick="addNumber('2')">2</button>
+        <button class="btn-number" onclick="addNumber('3')">3</button>
+        <button class="btn-op" onclick="setOp('-')">-</button>
+        <button class="btn-equal" onclick="calculateResult()">=</button>
 
-        <button class="btn-number" onclick="press('0')" style="grid-column: span 2;">0</button>
-        <button class="btn-number" onclick="press('.')">.</button>
-        <button class="btn-op" onclick="press('+')" style="grid-column: span 2;">+</button>
+        <button class="btn-number" onclick="addNumber('0')" style="grid-column: span 3;">0</button>
+        <button class="btn-op" onclick="setOp('+')">+</button>
     </div>
 </div>
 
 <script>
-    // --- SISTEMA DE ENTRADA Y PANTALLAS ---
-    let currentTarget = 'top'; 
-    const screenTop = document.getElementById('screen-top');
-    const screenBottom = document.getElementById('screen-bottom');
+    // --- SISTEMA DE ENTRADA Y FLUJO DE CALCULADORA ---
+    let currentInputTarget = 'num1'; // Puede ser 'num1' o 'num2'
+    let currentOperator = '';
+    
+    const sNum1 = document.getElementById('screen-num1');
+    const sOp = document.getElementById('screen-op');
+    const sNum2 = document.getElementById('screen-num2');
 
-    function updateFocusClass() {
-        if (currentTarget === 'top') {
-            screenTop.classList.add('active-top');
-            screenBottom.classList.remove('active-bottom');
+    // Define en qué casilla se escribirán los números
+    function setTarget(target) {
+        currentInputTarget = target;
+        updateFocusStyles();
+    }
+
+    // Actualiza visualmente qué casilla está activa
+    function updateFocusStyles() {
+        if (currentInputTarget === 'num1') {
+            sNum1.classList.add('active-screen');
+            sNum2.classList.remove('active-screen');
         } else {
-            screenBottom.classList.add('active-bottom');
-            screenTop.classList.remove('active-top');
+            sNum2.classList.add('active-screen');
+            sNum1.classList.remove('active-screen');
         }
     }
 
-    function switchScreen(target) {
-        currentTarget = target;
-        updateFocusClass();
-    }
-
-    function toggleScreen() {
-        currentTarget = (currentTarget === 'top') ? 'bottom' : 'top';
-        updateFocusClass();
-    }
-
-    function press(value) {
-        if (currentTarget === 'top') {
-            screenTop.value += value;
+    // Añade un número a la casilla activa
+    function addNumber(val) {
+        if (currentInputTarget === 'num1') {
+            sNum1.value += val;
         } else {
-            screenBottom.value += value;
+            sNum2.value += val;
         }
     }
 
-    function clearScreen() {
-        screenTop.value = '';
-        screenBottom.value = '';
-        currentTarget = 'top';
-        updateFocusClass();
+    // Establece la operación sin escribirla en las casillas de números
+    function setOp(op) {
+        currentOperator = op;
+        sOp.value = op; // Mostramos el operador en el centro
+        
+        // Al elegir operador, saltamos automáticamente al segundo número
+        currentInputTarget = 'num2';
+        updateFocusStyles();
     }
 
-    function backspace() {
-        let activeScreen = (currentTarget === 'top') ? screenTop : screenBottom;
+    function clearCalculator() {
+        sNum1.value = '';
+        sOp.value = '';
+        sNum2.value = '';
+        currentOperator = '';
+        currentInputTarget = 'num1';
+        updateFocusStyles();
+    }
+
+    function performBackspace() {
+        let activeScreen = (currentInputTarget === 'num1') ? sNum1 : sNum2;
         activeScreen.value = activeScreen.value.slice(0, -1);
     }
 
-    function calculate() {
+    function calculateResult() {
         try {
-            let valTop = screenTop.value.trim() || "0";
-            let valBottom = screenBottom.value.trim() || "1";
+            let n1_raw = sNum1.value || "0";
+            let n2_raw = sNum2.value || "0";
+            
+            // Evaluamos las expresiones de los números por si hay paréntesis o PI
+            let n1 = eval(n1_raw.replace(/π/g, 'Math.PI'));
+            let n2 = eval(n2_raw.replace(/π/g, 'Math.PI'));
+            let op = currentOperator;
+            let result;
 
-            let resTop = eval(valTop);
-            let resBottom = eval(valBottom);
-
-            let finalResult = resTop / resBottom;
-
-            if (isNaN(finalResult) || !isFinite(finalResult)) {
-                screenTop.value = "Error";
-                screenBottom.value = "";
-            } else {
-                screenTop.value = Number(finalResult.toFixed(6));
-                screenBottom.value = "";
-                currentTarget = 'top';
-                updateFocusClass();
+            // Ejecutamos la operación elegida
+            switch (op) {
+                case '+': result = n1 + n2; break;
+                case '-': result = n1 - n2; break;
+                case '*': result = n1 * n2; break;
+                case '/': result = n1 / n2; break;
+                case '^': result = Math.pow(n1, n2); break;
+                case '√': result = Math.sqrt(n1); break;
+                case 'sin': result = Math.sin(n1 * Math.PI / 180); break; // Asumimos Grados
+                case 'cos': result = Math.cos(n1 * Math.PI / 180); break;
+                case 'tan': result = Math.tan(n1 * Math.PI / 180); break;
+                case 'log': result = Math.log10(n1); break;
+                default: result = n1; // Si no hay operador, muestra n1
             }
+
+            if (isNaN(result) || !isFinite(result)) {
+                sNum1.value = "Error";
+            } else {
+                // Mostramos el resultado simplificado en el primer campo
+                let formattedRes = Number(result.toFixed(8)).toString();
+                sNum1.value = formattedRes;
+            }
+            
+            // Limpiamos operador y segundo número para la siguiente operación
+            sOp.value = '';
+            sNum2.value = '';
+            currentOperator = '';
+            currentInputTarget = 'num1';
+            updateFocusStyles();
+
         } catch (error) {
-            screenTop.value = "Error";
-            screenBottom.value = "";
+            sNum1.value = "Error";
+            sOp.value = '';
+            sNum2.value = '';
         }
     }
 
-    // --- ANIMACIÓN CORREGIDA DE METEORITOS ---
+    // --- MOTOR DE ANIMACIÓN ESPACIAL ARREGLADO (CANVAS) ---
     const canvas = document.getElementById('space-bg');
-    const context = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d'); // Aseguramos que cargue el contexto
 
     function resizeCanvas() {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
     }
     window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
+    resizeCanvas(); // Ejecutar inicio
 
-    class Meteor {
-        constructor() {
-            this.reset();
-        }
-
+    // 1. ESTRELLAS ESTÁTICAS DE FONDO
+    class Star {
+        constructor() { this.reset(); }
         reset() {
-            // Aparecen un poco más a la derecha para cruzar cómodamente en diagonal
-            this.x = Math.random() * canvas.width * 1.4;
-            this.y = Math.random() * -100 - 20;
-            this.length = Math.random() * 90 + 50; 
-            this.speed = Math.random() * 4 + 3;     
-            this.thickness = Math.random() * 2 + 1; 
-            this.alpha = Math.random() * 0.4 + 0.6; 
+            this.x = Math.random() * canvas.width;
+            this.y = Math.random() * canvas.height;
+            this.size = Math.random() * 1.5;
+            this.blinkSpeed = Math.random() * 0.02 + 0.005;
+            this.alpha = Math.random();
         }
+        draw() {
+            this.alpha += this.blinkSpeed;
+            if (this.alpha > 1 || this.alpha < 0) this.blinkSpeed *= -1;
+            ctx.fillStyle = `rgba(255, 255, 255, ${Math.abs(this.alpha)})`;
+            ctx.beginPath();
+            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
+            ctx.fill();
+        }
+    }
 
+    // 2. METEORITOS ANIMADOS (Fugaces)
+    class Meteor {
+        constructor() { this.reset(); }
+        reset() {
+            this.x = Math.random() * canvas.width * 1.5;
+            this.y = Math.random() * -300 - 50; // Aparecen arriba fuera de pantalla
+            this.length = Math.random() * 120 + 80; // Estela larga
+            this.speed = Math.random() * 6 + 4; // Rápidos
+            this.thickness = Math.random() * 2 + 1;
+            this.alpha = Math.random() * 0.5 + 0.5;
+        }
         update() {
+            // Movimiento diagonal izquierda-abajo
             this.x -= this.speed * 0.8;
             this.y += this.speed;
-
-            if (this.y > canvas.height + 50 || this.x < -100) {
-                this.reset();
-            }
-        }
-
-        draw() {
-            context.beginPath();
-            let gradient = context.createLinearGradient(this.x, this.y, this.x + this.length * 0.7, this.y - this.length);
-            gradient.addColorStop(0, `rgba(255, 75, 43, ${this.alpha})`);  
-            gradient.addColorStop(0.2, `rgba(255, 12, 12, ${this.alpha * 0.4})`);
-            gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');                  
-
-            context.strokeStyle = gradient;
-            context.lineWidth = this.thickness;
-            context.moveTo(this.x, this.y);
-            context.lineTo(this.x + this.length * 0.7, this.y - this.length);
-            context.stroke();
-        }
-    }
-
-    const meteors = [];
-    const maxMeteors = 20; // Cantidad de estrellas fugaces simultáneas
-    for (let i = 0; i < maxMeteors; i++) {
-        meteors.push(new Meteor());
-    }
-
-    function animate() {
-        // Fondo con leve opacidad para crear el efecto estela (trail) en los meteoritos
-        context.fillStyle = 'rgba(5, 5, 16, 0.2)';
-        context.fillRect(0, 0, canvas.width, canvas.height);
-
-        meteors.forEach(meteor => {
-            meteor.update();
-            meteor.draw();
-        });
-
-        requestAnimationFrame(animate);
-    }
-
-    animate();
-</script>
-
-</body>
-</html>
+            // Reiniciar si salen de la pantalla
+            if (this.y > canvas.height + 100 || this.x < -150) {
