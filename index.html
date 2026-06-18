@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora Científica Órbita Libre</title>
+    <title>Calculadora Científica Orbital Pro</title>
     <style>
         body, html {
             margin: 0;
@@ -15,75 +15,79 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background-color: #010103;
+            background-color: #010103; /* Fondo base muy oscuro */
         }
 
-        /* Fondo Espacial Animado */
+        /* Canvas para el fondo de meteoritos animado */
         #space-bg {
             position: fixed;
             top: 0;
             left: 0;
             width: 100%;
             height: 100%;
-            z-index: -1;
+            z-index: -1; /* Asegura que esté detrás de todo */
             display: block;
         }
 
         .calculator {
-            background-color: rgba(15, 15, 25, 0.9);
+            background-color: rgba(20, 20, 30, 0.85);
             backdrop-filter: blur(15px);
-            padding: 25px;
+            padding: 30px;
             border-radius: 25px;
-            box-shadow: 0 25px 60px rgba(230, 0, 0, 0.25);
-            border: 1px solid rgba(255, 50, 50, 0.3);
+            box-shadow: 0 25px 60px rgba(255, 50, 50, 0.2);
+            border: 1px solid rgba(255, 100, 100, 0.3);
             width: 100%;
-            max-width: 420px;
+            max-width: 480px;
             position: relative;
             z-index: 10;
         }
 
-        /* Estructura de Pantallas Superiores */
+        /* Contenedor principal de pantallas independientes */
         .screens-container {
-            display: grid;
-            grid-template-columns: 1fr auto 1fr;
+            display: flex;
+            justify-content: space-between;
             align-items: center;
-            gap: 10px;
+            gap: 15px;
             margin-bottom: 25px;
         }
 
+        /* Estilo de cada pantalla independiente */
         .display-box {
-            background-color: rgba(30, 30, 40, 0.8);
+            width: 42%;
+            height: 60px;
+            background-color: rgba(30, 30, 45, 0.8);
             border: 2px solid #444;
-            border-radius: 10px;
+            border-radius: 12px;
             color: #ffffff;
+            font-size: 26px;
             text-align: right;
             padding: 12px;
             box-sizing: border-box;
             outline: none;
             cursor: pointer;
-            transition: all 0.2s ease;
-            width: 100%;
-            height: 50px;
-            font-size: 24px;
+            transition: all 0.3s ease;
         }
 
-        /* Pantalla de operador (Centro) */
-        .op-input {
-            width: 50px;
-            height: 50px;
-            font-size: 20px;
-            text-align: center;
-            color: #f1c40f;
-            font-weight: bold;
-            border-color: #555;
-            cursor: default;
-        }
-
-        /* Casilla numérica activa (donde escribes) */
+        /* Efecto cuando la pantalla está seleccionada */
         .display-box.active-screen {
             border-color: #3498db;
             box-shadow: 0 0 12px rgba(52, 152, 219, 0.6);
-            background-color: rgba(40, 40, 60, 0.9);
+            background-color: rgba(40, 40, 60, 1);
+        }
+
+        /* Selector de operación (Centro) */
+        .op-selector {
+            width: 50px;
+            height: 50px;
+            background-color: transparent;
+            border: none;
+            color: #f1c40f;
+            font-size: 30px;
+            font-weight: bold;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: default;
         }
 
         .grid {
@@ -99,14 +103,14 @@
             font-size: 17px;
             font-weight: bold;
             cursor: pointer;
-            transition: all 0.1s ease;
+            transition: transform 0.1s, filter 0.2s;
         }
 
         button:active { transform: scale(0.92); }
-        button:hover { filter: brightness(1.25); }
+        button:hover { filter: brightness(1.3); }
         
-        /* Colores de Botones */
-        .btn-number { background-color: #3e3e3e; color: white; }
+        /* Botones de Números y Operaciones */
+        .btn-number { background-color: #444; color: white; }
         .btn-sci { background-color: #2c3e50; color: #3498db; font-size: 15px; }
         .btn-op { background-color: #d35400; color: white; }
         .btn-clear { background-color: #c0392b; color: white; }
@@ -119,158 +123,159 @@
 
 <div class="calculator">
     <div class="screens-container">
-        <input type="text" id="screen-num1" class="display-box active-screen" readonly onclick="setFocus('num1')" placeholder="">
-        <input type="text" id="screen-op" class="display-box op-input" readonly placeholder="">
-        <input type="text" id="screen-num2" class="display-box" readonly onclick="setFocus('num2')" placeholder="">
+        <input type="text" id="screen-a" class="display-box active-screen" readonly placeholder="" onclick="setTarget('a')">
+        <div class="op-selector" id="op-view">?</div>
+        <input type="text" id="screen-b" class="display-box" readonly placeholder="" onclick="setTarget('b')">
     </div>
 
     <div class="grid">
-        <button class="btn-sci" onclick="setDirectOp('sin')">sin</button>
-        <button class="btn-sci" onclick="setDirectOp('cos')">cos</button>
-        <button class="btn-sci" onclick="setDirectOp('tan')">tan</button>
-        <button class="btn-clear" onclick="clearAll()">C</button>
+        <button class="btn-sci" onclick="setOp('sin(')">sin</button>
+        <button class="btn-sci" onclick="setOp('cos(')">cos</button>
+        <button class="btn-sci" onclick="setOp('tan(')">tan</button>
+        <button class="btn-clear" onclick="clearCalculator()">C</button>
         <button class="btn-clear" onclick="backspace()">⌫</button>
 
-        <button class="btn-sci" onclick="setDirectOp('log')">log</button>
-        <button class="btn-sci" onclick="setDirectOp('√')">√</button>
-        <button class="btn-sci" onclick="setDirectOp('^')">^</button>
-        <button class="btn-sci" onclick="addNumber('(')">(</button>
-        <button class="btn-sci" onclick="addNumber(')')">)</button>
+        <button class="btn-sci" onclick="setOp('log(')">log</button>
+        <button class="btn-sci" onclick="setOp('√(')">√</button>
+        <button class="btn-number" onclick="press('Math.PI')">π</button>
+        <button class="btn-sci" onclick="setOp('**')">^</button>
+        <button class="btn-op" onclick="setOp('/')">÷</button>
 
-        <button class="btn-number" onclick="addNumber('7')">7</button>
-        <button class="btn-number" onclick="addNumber('8')">8</button>
-        <button class="btn-number" onclick="addNumber('9')">9</button>
-        <button class="btn-sci" onclick="addNumber('Math.PI')">π</button>
-        <button class="btn-op" onclick="setDirectOp('/')">/</button>
+        <button class="btn-number" onclick="press('7')">7</button>
+        <button class="btn-number" onclick="press('8')">8</button>
+        <button class="btn-number" onclick="press('9')">9</button>
+        <button class="btn-sci" onclick="press('(')">(</button>
+        <button class="btn-op" onclick="setOp('*')">×</button>
 
-        <button class="btn-number" onclick="addNumber('4')">4</button>
-        <button class="btn-number" onclick="addNumber('5')">5</button>
-        <button class="btn-number" onclick="addNumber('6')">6</button>
-        <button class="btn-number" onclick="addNumber('.')">.</button>
-        <button class="btn-op" onclick="setDirectOp('*')">*</button>
+        <button class="btn-number" onclick="press('4')">4</button>
+        <button class="btn-number" onclick="press('5')">5</button>
+        <button class="btn-number" onclick="press('6')">6</button>
+        <button class="btn-sci" onclick="press(')')">)</button>
+        <button class="btn-op" onclick="setOp('-')">−</button>
 
-        <button class="btn-number" onclick="addNumber('1')">1</button>
-        <button class="btn-number" onclick="addNumber('2')">2</button>
-        <button class="btn-number" onclick="addNumber('3')">3</button>
-        <button class="btn-op" onclick="setDirectOp('-')">-</button>
-        <button class="btn-equal" onclick="performCalculation()">=</button>
+        <button class="btn-number" onclick="press('1')">1</button>
+        <button class="btn-number" onclick="press('2')">2</button>
+        <button class="btn-number" onclick="press('3')">3</button>
+        <button class="btn-op" onclick="setOp('+')">+</button>
+        <button class="btn-equal" onclick="calculate()">=</button>
 
-        <button class="btn-number" onclick="addNumber('0')" style="grid-column: span 3;">0</button>
-        <button class="btn-op" onclick="setDirectOp('+')">+</button>
+        <button class="btn-number" onclick="press('0')" style="grid-column: span 3;">0</button>
+        <button class="btn-number" onclick="press('.')">.</button>
     </div>
 </div>
 
 <script>
-    // --- LÓGICA DE FLUJO DE LA CALCULADORA (CORREGIDA) ---
-    let currentFocusedScreen = 'num1'; 
-    let selectedOperation = '';
-    
-    const sNum1 = document.getElementById('screen-num1');
-    const sOp = document.getElementById('screen-op');
-    const sNum2 = document.getElementById('screen-num2');
+    // --- LÓGICA DE LA CALCULADORA ORBITAL ---
+    let currentTarget = 'a'; // Puede ser 'a' o 'b'
+    let currentOperation = '';
+    const screenA = document.getElementById('screen-a');
+    const screenB = document.getElementById('screen-b');
+    const opView = document.getElementById('op-view');
 
-    // Cambia dónde escribes (puedes hacer clic libremente)
-    function setFocus(screenId) {
-        currentFocusedScreen = screenId;
-        updateFocusUI();
+    // Define en qué casilla se escribirán los números
+    function setTarget(target) {
+        currentTarget = target;
+        updateFocusStyles();
     }
 
     // Actualiza visualmente qué casilla está activa
-    function updateFocusUI() {
-        if (currentFocusedScreen === 'num1') {
-            sNum1.classList.add('active-screen');
-            sNum2.classList.remove('active-screen');
+    function updateFocusStyles() {
+        if (currentTarget === 'a') {
+            screenA.classList.add('active-screen');
+            screenB.classList.remove('active-screen');
         } else {
-            sNum2.classList.add('active-screen');
-            sNum1.classList.remove('active-screen');
+            screenB.classList.add('active-screen');
+            screenA.classList.remove('active-screen');
         }
     }
 
-    // Añade números o símbolos directamente a la casilla enfocada (SIN BLOQUEOS)
-    function addNumber(val) {
-        if (currentFocusedScreen === 'num1') {
-            sNum1.value += val;
+    // Añade números o PI a la casilla activa
+    function press(value) {
+        if (currentTarget === 'a') {
+            screenA.value += value;
         } else {
-            sNum2.value += val;
+            screenB.value += value;
         }
     }
 
-    // NUEVA LÓGICA: Al pulsar CUALQUIER operación, se registra y saltas de casilla por comodidad
-    function setDirectOp(op) {
-        selectedOperation = op;
-        sOp.value = op; // Mostramos el operador dorado
-
-        // Si la primera casilla está vacía, asumimos que quieres calcular sobre '0'
-        if (sNum1.value === '') sNum1.value = '0';
-
-        // Comodidad: saltamos al segundo número para que sigas escribiendo
-        setFocus('num2');
+    // Establece la operación que se va a realizar
+    function setOp(op) {
+        currentOperation = op;
+        // Mostramos un símbolo limpio en el centro
+        let opDisplay = op.replace('(', '').replace('**', '^');
+        if (opDisplay === '/') opDisplay = '÷';
+        if (opDisplay === '*') opDisplay = '×';
+        opView.innerText = opDisplay;
+        
+        // Al elegir operación, saltamos automáticamente a la Opción B
+        currentTarget = 'b';
+        updateFocusStyles();
     }
 
-    function clearAll() {
-        sNum1.value = '';
-        sOp.value = '';
-        sNum2.value = '';
-        selectedOperation = '';
-        setFocus('num1');
+    function clearCalculator() {
+        screenA.value = '';
+        screenB.value = '';
+        opView.innerText = '?';
+        currentOperation = '';
+        currentTarget = 'a';
+        updateFocusStyles();
     }
 
     function backspace() {
-        let activeScreen = (currentFocusedScreen === 'num1') ? sNum1 : sNum2;
+        let activeScreen = (currentTarget === 'a') ? screenA : screenB;
         activeScreen.value = activeScreen.value.slice(0, -1);
     }
 
-    function performCalculation() {
+    function calculate() {
         try {
-            // Evaluamos las expresiones de los números (reemplazando PI)
-            let n1_eval = sNum1.value.replace(/Math.PI/g, Math.PI) || "0";
-            let n2_eval = sNum2.value.replace(/Math.PI/g, Math.PI) || "0";
-            
-            let n1 = eval(n1_eval);
-            let n2 = eval(n2_eval);
-            let op = selectedOperation;
+            let valA = screenA.value.trim();
+            let valB = screenB.value.trim();
+            let op = currentOperation;
             let result;
 
-            if (!op) { result = n1; } // Si no hay operación, muestra el primer número
-            else {
-                // Ejecutamos la operación
-                switch (op) {
-                    case '+': result = n1 + n2; break;
-                    case '-': result = n1 - n2; break;
-                    case '*': result = n1 * n2; break;
-                    case '/': result = n1 / n2; break;
-                    case '^': result = Math.pow(n1, n2); break;
-                    case '√': result = Math.sqrt(n1); break;
-                    case 'sin': result = Math.sin(n1 * Math.PI / 180); break; // Usamos Grados
-                    case 'cos': result = Math.cos(n1 * Math.PI / 180); break;
-                    case 'tan': result = Math.tan(n1 * Math.PI / 180); break;
-                    case 'log': result = Math.log10(n1); break;
-                    default: result = n1;
+            if (!valA || !valB) {
+                if (valA && !valB && op.includes('(')) {
+                    // Soporte para funciones de un solo parámetro (sin(90), etc.)
+                    // En este caso, ignoramos valB y calculamos sin(valA)
+                } else {
+                    return; // No calculamos si faltan datos básicos
                 }
             }
 
-            if (isNaN(result) || !isFinite(result)) {
-                sNum1.value = "Error";
+            // Construimos la expresión matemática final
+            let expression;
+            if (op.includes('(')) {
+                // Para funciones: sin(90)
+                expression = op + valA + ')';
             } else {
-                // Resultado formateado y limpio
-                let formattedRes = Number(result.toFixed(8)).toString();
-                sNum1.value = formattedRes;
+                // Para operaciones básicas: 10 + 2
+                expression = valA + op + valB;
+            }
+
+            // Evaluamos la expresión
+            result = eval(expression);
+
+            if (isNaN(result) || !isFinite(result)) {
+                screenA.value = "Error";
+            } else {
+                // Mostramos el resultado formateado en la Opción A
+                let formattedRes = Number(result.toFixed(6)).toString();
+                screenA.value = formattedRes;
             }
             
-            // Limpiamos operador y segundo número para seguir calculando
-            sOp.value = '';
-            sNum2.value = '';
-            selectedOperation = '';
-            setFocus('num1'); // Volvemos al inicio con el resultado
+            // Limpiamos operador y Opción B para la siguiente operación
+            screenB.value = '';
+            opView.innerText = '?';
+            currentOperation = '';
+            currentTarget = 'a';
+            updateFocusStyles();
 
         } catch (error) {
-            sNum1.value = "Error";
-            sOp.value = '';
-            sNum2.value = '';
+            screenA.value = "Error";
         }
     }
 
-    // --- MOTOR DE ANIMACIÓN ESPACIAL (CANVAS) ---
+    // --- MOTOR DE ANIMACIÓN ESPACIAL (CANVAS) ARREGLADO ---
     const canvas = document.getElementById('space-bg');
     const ctx = canvas.getContext('2d');
 
@@ -279,50 +284,42 @@
         canvas.height = window.innerHeight;
     }
     window.addEventListener('resize', resizeCanvas);
-    resizeCanvas();
+    resizeCanvas(); // Ejecutar al inicio
 
-    // 1. ESTRELLAS DE FONDO
-    class Star {
-        constructor() { this.reset(); }
-        reset() {
-            this.x = Math.random() * canvas.width;
-            this.y = Math.random() * canvas.height;
-            this.size = Math.random() * 1.5;
-            this.blinkSpeed = Math.random() * 0.02 + 0.005;
-            this.alpha = Math.random();
-        }
-        draw() {
-            this.alpha += this.blinkSpeed;
-            if (this.alpha > 1 || this.alpha < 0) this.blinkSpeed *= -1;
-            ctx.fillStyle = `rgba(255, 255, 255, ${Math.abs(this.alpha)})`;
-            ctx.beginPath();
-            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-            ctx.fill();
-        }
-    }
-
-    // 2. METEORITOS ANIMADOS
+    // Estructura de un meteorito
     class Meteor {
-        constructor() { this.reset(); }
-        reset() {
-            this.x = Math.random() * canvas.width * 1.4;
-            this.y = Math.random() * -300 - 50; 
-            this.length = Math.random() * 110 + 70;
-            this.speed = Math.random() * 6 + 3.5;
-            this.thickness = Math.random() * 1.8 + 0.8;
-            this.alpha = Math.random() * 0.5 + 0.5;
+        constructor() {
+            this.reset();
         }
+
+        reset() {
+            this.x = Math.random() * canvas.width * 1.5; // Aparecen a la derecha
+            this.y = Math.random() * -300 - 50;          // Aparecen arriba fuera de pantalla
+            this.length = Math.random() * 80 + 50;     // Largo de la estela
+            this.speed = Math.random() * 6 + 4;         // Velocidad de caída
+            this.thickness = Math.random() * 2 + 1;     // Grosor
+            this.alpha = Math.random() * 0.5 + 0.5;     // Transparencia
+        }
+
         update() {
+            // Se mueven diagonalmente (izquierda-abajo)
             this.x -= this.speed * 0.7;
             this.y += this.speed;
-            if (this.y > canvas.height + 100 || this.x < -150) { this.reset(); }
+
+            // Si sale de la pantalla, se reinicia
+            if (this.y > canvas.height + 100 || this.x < -150) {
+                this.reset();
+            }
         }
+
         draw() {
             ctx.beginPath();
+            // Degradado de la estela (fuego -> transparente)
             let gradient = ctx.createLinearGradient(this.x, this.y, this.x + this.length * 0.7, this.y - this.length);
-            gradient.addColorStop(0, `rgba(255, 120, 60, ${this.alpha})`); // Cabeza roja
-            gradient.addColorStop(0.3, `rgba(200, 0, 0, ${this.alpha * 0.4})`);
-            gradient.addColorStop(1, 'rgba(0, 0, 0, 0)'); // Cola invisible
+            gradient.addColorStop(0, `rgba(255, 70, 50, ${this.alpha})`);   // Rojo naranja brillante
+            gradient.addColorStop(0.2, `rgba(255, 10, 10, ${this.alpha * 0.5})`);
+            gradient.addColorStop(1, 'rgba(0, 0, 0, 0)');                    // Desvanecido total
+
             ctx.strokeStyle = gradient;
             ctx.lineWidth = this.thickness;
             ctx.moveTo(this.x, this.y);
@@ -331,22 +328,29 @@
         }
     }
 
-    // Generar Objetos
-    const stars = Array.from({ length: 140 }, () => new Star());
-    const meteors = Array.from({ length: 22 }, () => new Meteor());
+    // Crear una lista de meteoritos
+    const meteors = [];
+    const maxMeteors = 20; // Cantidad de meteoritos simultáneos
+    for (let i = 0; i < maxMeteors; i++) {
+        meteors.push(new Meteor());
+    }
 
-    // Bucle de Animación
-    function drawScene() {
-        ctx.fillStyle = 'rgba(1, 1, 3, 0.25)'; // Trail effect
+    // Bucle de animación principal
+    function animate() {
+        // Fondo negro semi-transparente para el efecto 'trail' (estela difuminada)
+        ctx.fillStyle = 'rgba(1, 1, 3, 0.25)';
         ctx.fillRect(0, 0, canvas.width, canvas.height);
-        stars.forEach(star => star.draw());
+
+        // Actualizar y dibujar meteoritos
         meteors.forEach(meteor => {
             meteor.update();
             meteor.draw();
         });
-        requestAnimationFrame(drawScene);
+
+        requestAnimationFrame(animate); // Llamar al siguiente frame
     }
-    drawScene();
+
+    animate(); // Iniciar animación
 </script>
 
 </body>
