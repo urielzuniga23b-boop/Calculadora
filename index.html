@@ -3,9 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Calculadora Goku Ultra Instinto - Personaje Animado</title>
+    <title>Calculadora Goku Ultra Instinto - Versión Corregida</title>
     <style>
-        /* Fondo espacial oscuro */
         body, html {
             margin: 0;
             padding: 0;
@@ -16,11 +15,17 @@
             display: flex;
             justify-content: center;
             align-items: center;
-            background: radial-gradient(circle at center, #060b19 0%, #010205 100%);
+            background-color: #010103;
+            
+            /* TU IMAGEN ORIGINAL DE GOKU EN AZUL TOTALMENTE INTEGRADA */
+            background-image: url('imagen.jpg'); 
+            background-size: cover;
+            background-position: center;
+            background-repeat: no-repeat;
         }
 
-        /* Aura de energía en movimiento */
-        #aura-bg {
+        /* Canvas para los meteoritos animados en primer plano */
+        #space-bg {
             position: fixed;
             top: 0;
             left: 0;
@@ -30,52 +35,29 @@
             pointer-events: none;
         }
 
-        /* IMAGEN DE GOKU EN MOVIMIENTO (FLOTANDO Y RESPIRANDO) */
-        .goku-background {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            z-index: 2;
-            /* Usamos una imagen directa de Goku Ultra Instinto */
-            background-image: url('https://images.alphacoders.com/903/903225.png');
-            background-size: contain;
-            background-position: center;
-            background-repeat: no-repeat;
-            pointer-events: none;
-            /* Animación combinada de respiración y flotación */
-            animation: gokuLive 4s ease-in-out infinite;
-            filter: drop-shadow(0 0 20px rgba(135, 206, 250, 0.4));
-        }
-
-        /* Animación para darle vida a Goku en el fondo */
-        @keyframes gokuLive {
-            0% {
-                transform: translateY(0px) scale(1);
-            }
-            50% {
-                transform: translateY(-12px) scale(1.02); /* Sube y se expande sutilmente como si respirara */
-            }
-            100% {
-                transform: translateY(0px) scale(1);
-            }
-        }
-
-        /* Contenedor transparente (Estilo Glassmorphism para ver a Goku detrás) */
+        /* Contenedor transparente con animación de flotación corregida */
         .calculator {
-            background-color: rgba(5, 12, 28, 0.35);
-            backdrop-filter: blur(10px);
-            -webkit-backdrop-filter: blur(10px);
+            background-color: rgba(255, 255, 255, 0.08);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
             padding: 25px;
             border-radius: 20px;
-            border: 2px solid rgba(173, 216, 230, 0.4); 
-            box-shadow: 0 0 40px rgba(0, 191, 255, 0.25), 
-                        inset 0 0 20px rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(135, 206, 250, 0.5); 
+            box-shadow: 0 0 30px rgba(135, 206, 250, 0.3);
             width: 100%;
             max-width: 380px;
             position: relative;
             z-index: 10;
+            
+            /* Animación constante de flotación */
+            animation: floatCalc 4s ease-in-out infinite;
+        }
+
+        /* Definición del movimiento de vaivén/flotación */
+        @keyframes floatCalc {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
         }
 
         .screens-container {
@@ -100,7 +82,7 @@
         }
 
         .label-green { color: #5adbb5; }
-        .label-blue { color: #87cefa; }
+        .label-blue { color: #3498db; }
         .label-yellow { color: #f1c40f; }
         .label-orange { color: #e67e22; }
 
@@ -111,13 +93,13 @@
             margin-bottom: 5px;
         }
 
-        .title-result { color: #00ffcc; }
-        .title-a { color: #3498db; }
-        .title-b { color: #9b59b6; }
+        .title-result { color: #2ecc71; }
+        .title-a { color: #2980b9; }
+        .title-b { color: #d35400; }
 
         .display-box {
-            background-color: rgba(255, 255, 255, 0.08);
-            border: 1px solid rgba(173, 216, 230, 0.25);
+            background-color: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
             border-radius: 8px;
             color: #ffffff;
             font-size: 22px;
@@ -127,22 +109,19 @@
             outline: none;
             width: 100%;
             height: 45px;
-            text-shadow: 0 0 5px rgba(255, 255, 255, 0.5);
         }
 
         .result-screen {
             font-size: 28px;
             height: 50px;
-            color: #00ffcc;
-            border-color: rgba(0, 255, 204, 0.4);
-            background-color: rgba(0, 255, 204, 0.03);
-            text-shadow: 0 0 8px rgba(0, 255, 204, 0.6);
+            color: #2ecc71;
+            border-color: rgba(46, 204, 113, 0.5);
         }
 
         .display-box.active-screen {
-            border-color: #00bfff;
-            background-color: rgba(0, 191, 255, 0.15);
-            box-shadow: 0 0 15px rgba(0, 191, 255, 0.4);
+            border-color: #3498db;
+            background-color: rgba(52, 152, 219, 0.2);
+            box-shadow: 0 0 10px rgba(52, 152, 219, 0.5);
         }
 
         .inputs-row {
@@ -160,38 +139,31 @@
 
         button {
             height: 50px;
-            border: 1px solid rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.2);
             border-radius: 8px;
             font-size: 20px;
             font-weight: bold;
             color: white;
             cursor: pointer;
-            transition: transform 0.05s, filter 0.15s, box-shadow 0.15s;
+            transition: transform 0.05s, filter 0.15s;
         }
 
         button:active { transform: scale(0.95); }
-        button:hover { 
-            filter: brightness(1.3); 
-            box-shadow: 0 0 10px rgba(135, 206, 250, 0.4);
-        }
+        button:hover { filter: brightness(1.25); }
 
-        .btn-red { background-color: #5c148c; border-color: rgba(123, 31, 162, 0.3); } 
-        .btn-blue { background-color: #0f4c94; border-color: rgba(21, 101, 192, 0.3); } 
-        .btn-orange { background-color: #083170; border-color: rgba(13, 71, 161, 0.3); } 
+        .btn-red { background-color: #c0392b; }
+        .btn-blue { background-color: #2980b9; }
+        .btn-orange { background-color: #d35400; }
         .btn-green { 
-            background-color: #00695c; 
+            background-color: #27ae60; 
             grid-row: span 2; 
-            height: 110px;
-            border-color: rgba(0, 137, 123, 0.3);
-            text-shadow: 0 0 5px white;
+            height: 110px; 
         }
     </style>
 </head>
 <body>
 
-<canvas id="aura-bg"></canvas>
-
-<div class="goku-background"></div>
+<canvas id="space-bg"></canvas>
 
 <div class="calculator">
     <div class="screens-container">
@@ -323,8 +295,8 @@
         }
     }
 
-    // --- ANIMACIÓN INTERACTIVA DEL AURA DE KI ---
-    const canvas = document.getElementById('aura-bg');
+    // Animación de los meteoritos cayendo de fondo
+    const canvas = document.getElementById('space-bg');
     const ctx = canvas.getContext('2d');
 
     function resize() {
@@ -334,44 +306,37 @@
     window.addEventListener('resize', resize);
     resize();
 
-    class AuraParticle {
-        constructor() { this.reset(); this.y = Math.random() * canvas.height; }
+    class Meteor {
+        constructor() { this.reset(); }
         reset() {
-            this.x = Math.random() * canvas.width;
-            this.y = canvas.height + Math.random() * 50;
-            this.size = Math.random() * 50 + 25; 
-            this.speedY = Math.random() * 2.5 + 1.5; 
-            this.speedX = Math.sin(Math.random() * Math.PI) * 0.6;
-            this.alpha = Math.random() * 0.35 + 0.1;
-            const colors = ['rgba(255,255,255,', 'rgba(135,206,250,', 'rgba(165,105,189,', 'rgba(224,242,241,'];
-            this.baseColor = colors[Math.floor(Math.random() * colors.length)];
+            this.x = Math.random() * canvas.width * 1.3;
+            this.y = Math.random() * -200;
+            this.length = Math.random() * 60 + 40;
+            this.speed = Math.random() * 5 + 3;
         }
         update() {
-            this.y -= this.speedY;
-            this.x += this.speedX;
-            this.alpha -= 0.0025;
-            if (this.y < -60 || this.alpha <= 0) this.reset();
+            this.x -= this.speed * 0.7;
+            this.y += this.speed;
+            if (this.y > canvas.height || this.x < -100) this.reset();
         }
         draw() {
-            ctx.save();
-            let gradient = ctx.createRadialGradient(this.x, this.y, 0, this.x, this.y, this.size);
-            gradient.addColorStop(0, this.baseColor + this.alpha + ')');
-            gradient.addColorStop(0.6, this.baseColor + (this.alpha * 0.3) + ')');
-            gradient.addColorStop(1, 'rgba(0,0,0,0)');
-            ctx.fillStyle = gradient;
             ctx.beginPath();
-            ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.restore();
+            let g = ctx.createLinearGradient(this.x, this.y, this.x + this.length * 0.7, this.y - this.length);
+            g.addColorStop(0, 'rgba(135, 206, 250, 0.4)'); 
+            g.addColorStop(1, 'rgba(0,0,0,0)');
+            ctx.strokeStyle = g;
+            ctx.lineWidth = 1.5;
+            ctx.moveTo(this.x, this.y);
+            ctx.lineTo(this.x + this.length * 0.7, this.y - this.length);
+            ctx.stroke();
         }
     }
 
-    const particles = Array.from({ length: 50 }, () => new AuraParticle());
+    const meteors = Array.from({ length: 15 }, () => new Meteor());
 
     function animate() {
         ctx.clearRect(0, 0, canvas.width, canvas.height);
-        ctx.globalCompositeOperation = 'screen';
-        particles.forEach(p => { p.update(); p.draw(); });
+        meteors.forEach(m => { m.update(); m.draw(); });
         requestAnimationFrame(animate);
     }
     animate();
